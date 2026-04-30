@@ -60,12 +60,12 @@
 
       // ── Fake Node.js-style stream ─────────────────────────────────────────
       // Ink expects stdout / stdin to look like Node streams.
-      const createStream = (cols = 80) => {
+      const createStream = (cols = 80, rows = 24) => {
         const s = new EventEmitter();
         s.columns      = cols;
-        s.rows         = 24;
+        s.rows         = rows;
         s.isTTY        = true;
-        s.write        = str => term.write(str);
+        s.write        = str => { term.write(str); return true; };
         s.setEncoding  = () => {};
         s.setRawMode   = () => {};
         s.resume       = () => {};
@@ -73,8 +73,9 @@
         return s;
       };
 
-      const stdout = createStream();
-      const stdin  = createStream();
+      // Use the terminal's own dimensions so the stream reflects actual size.
+      const stdout = createStream(term.cols, term.rows);
+      const stdin  = createStream(term.cols, term.rows);
 
       // Forward keystrokes from xterm.js → Ink's stdin
       term.onData(data => stdin.emit('data', data));
