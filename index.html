@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <script>
+      window.process = {
+        env: {
+          FORCE_COLOR: true,
+          CI: false
+        },
+        cwd: (args) => {
+          return ''
+        },
+        stderr: {
+          isTTY: false
+        }
+      }
+    </script>
+    <script type="module" src="/index.ts"></script>
+  </head>
+  <body>
+    <div id="terminal"></div>
+
+    <a href="https://github.com/skorfmann/ink-storybook">Github Repo</a>
+  </body>
+</html>
