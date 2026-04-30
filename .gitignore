@@ -5,3 +5,4 @@ yalc.lock
 **/*.js
 !patched-supports-color.js
 !webpack.config.js
+!shims/process.js
