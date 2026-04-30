@@ -7,12 +7,14 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills({
-      include: ['stream', 'buffer', 'assert', 'os', 'tty', 'events', 'util', 'string_decoder'],
+      include: ['path', 'stream', 'buffer', 'assert', 'os', 'tty', 'events', 'util', 'string_decoder'],
       exclude: ['fs', 'module', 'child_process'],
     }),
   ],
   resolve: {
     alias: {
+      'process': path.resolve(__dirname, 'shims/process.js'),
+      'node:process': path.resolve(__dirname, 'shims/process.js'),
       'supports-color/browser.js': path.resolve(__dirname, 'patched-supports-color.js'),
     },
   },
