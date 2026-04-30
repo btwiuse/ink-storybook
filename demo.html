@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ink-storybook demo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm/css/xterm.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm/lib/xterm.js"></script>
+
+    <!--
+      Import map: all runtime dependencies resolved via esm.sh so no build
+      step is needed.  esm.sh re-builds npm packages for the browser and
+      handles Node.js built-in shims automatically.
+    -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react":  "https://esm.sh/react@17",
+        "ink":    "https://esm.sh/ink@3?deps=react@17",
+        "events": "https://esm.sh/events"
+      }
+    }
+    </script>
+
+    <style>
+      body { margin: 0; background: #1e1e1e; }
+      #terminal { padding: 8px; }
+    </style>
+  </head>
+
+  <body>
+    <div id="terminal"></div>
+
+    <!--
+      Minimal process polyfill required by ink / chalk / supports-color
+      when running outside Node.js.
+    -->
+    <script>
+      window.process = {
+        env: {
+          FORCE_COLOR: '3',
+          TERM: 'xterm-256color',
+          CI: 'false'
+        },
+        cwd:      () => '/',
+        stderr:   { isTTY: true },
+        stdout:   { isTTY: true },
+        argv:     [],
+        versions: {}
+      };
+    </script>
+
+    <script type="module">
+      import React, { useState, useEffect } from 'react';
+      import { render, Text, Box }           from 'ink';
+      import EventEmitter                    from 'events';
+
+      // ── xterm.js terminal ────────────────────────────────────────────────
+      // Terminal is exposed as a global by the UMD bundle loaded above.
+      const term = new window.Terminal({ convertEol: true, disableStdin: false });
+
+      // ── Fake Node.js-style stream ─────────────────────────────────────────
+      // Ink expects stdout / stdin to look like Node streams.
+      const createStream = (cols = 80) => {
+        const s = new EventEmitter();
+        s.columns      = cols;
+        s.rows         = 24;
+        s.isTTY        = true;
+        s.write        = str => term.write(str);
+        s.setEncoding  = () => {};
+        s.setRawMode   = () => {};
+        s.resume       = () => {};
+        s.pause        = () => {};
+        return s;
+      };
+
+      const stdout = createStream();
+      const stdin  = createStream();
+
+      // Forward keystrokes from xterm.js → Ink's stdin
+      term.onData(data => stdin.emit('data', data));
+
+      // ── Ink demo component ───────────────────────────────────────────────
+      const COLORS = ['cyan', 'magenta', 'yellow', 'green', 'blue', 'red'];
+
+      const Counter = () => {
+        const [count, setCount] = useState(0);
+
+        useEffect(() => {
+          const id = setInterval(() => setCount(c => c + 1), 1000);
+          return () => clearInterval(id);
+        }, []);
+
+        const color = COLORS[count % COLORS.length];
+
+        return React.createElement(
+          Box, { flexDirection: 'column' },
+
+          // Header
+          React.createElement(
+            Text, { bold: true, color: 'magenta' },
+            '\u270f  Ink running inside xterm.js'
+          ),
+
+          // Blank spacer line
+          React.createElement(Text, null, ''),
+
+          // Animated counter line
+          React.createElement(
+            Box, null,
+            React.createElement(Text, null, 'Seconds elapsed: '),
+            React.createElement(Text, { color, bold: true }, String(count))
+          ),
+
+          // Static hint
+          React.createElement(
+            Text, { color: 'gray' },
+            'Type anything \u2014 keystrokes are forwarded to Ink via stdin'
+          )
+        );
+      };
+
+      // ── Mount once the DOM is ready ──────────────────────────────────────
+      document.addEventListener('DOMContentLoaded', () => {
+        term.open(document.getElementById('terminal'));
+        term.focus();
+
+        render(
+          React.createElement(Counter),
+          { stdout, stderr: stdout, stdin, debug: false, patchConsole: false }
+        );
+      });
+    </script>
+  </body>
+</html>
