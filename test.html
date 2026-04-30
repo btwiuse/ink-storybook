@@ -1,26 +1,119 @@
 <!doctype html>
-  <html>
-    <head>
-      <link rel="stylesheet" href="xterm.css" />
-      <script>
-          window.process = {
-            env: {
-              FORCE_COLOR: true,
-              CI: false
-            },
-            cwd: (args) => {
-              return ''
-            },
-            stderr: {
-              isTTY: false
-            }
-          }
-      </script>
-      <script src="bundle.js"></script>
-    </head>
-    <body>
-      <div id="terminal"></div>
-    </body>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Ink v7 Demo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5/css/xterm.css" />
+    <script>
+      window.process = {
+        env: {
+          FORCE_COLOR: '1',
+          COLORTERM: 'truecolor',
+          CI: false,
+          TERM: 'xterm-256color',
+        },
+        cwd: () => '/',
+        stderr: { isTTY: true, columns: 80 },
+        stdout: { isTTY: true, columns: 80 },
+        stdin: { isTTY: true },
+        platform: 'linux',
+        version: 'v20.0.0',
+        versions: {},
+        hrtime: (prev) => {
+          const now = performance.now() * 1e6;
+          if (prev) return [Math.floor((now - (prev[0] * 1e9 + prev[1])) / 1e9), (now - (prev[0] * 1e9 + prev[1])) % 1e9 | 0];
+          return [Math.floor(now / 1e9) | 0, now % 1e9 | 0];
+        },
+        exit: (code) => console.log('process.exit:', code),
+        nextTick: (fn, ...args) => Promise.resolve().then(() => fn(...args)),
+      };
+    </script>
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18",
+        "react/jsx-runtime": "https://esm.sh/react@18/jsx-runtime",
+        "react-dom": "https://esm.sh/react-dom@18",
+        "react-dom/client": "https://esm.sh/react-dom@18/client",
+        "ink": "https://esm.sh/ink@7",
+        "events": "https://esm.sh/events",
+        "xterm": "https://esm.sh/xterm@5"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <div id="terminal"></div>
+    <a href="https://github.com/btwiuse/ink-storybook">Github Repo</a>
+    <script type="module">
+      import { Terminal } from 'xterm';
+      import React, { useState, useEffect } from 'react';
+      import { render, Text, Box } from 'ink';
+      import EventEmitter from 'events';
 
-    <a href="https://github.com/skorfmann/ink-storybook">Github Repo</a>
-  </html>
+      const term = new Terminal({ convertEol: true, disableStdin: false, cols: 80, rows: 24 });
+
+      const createStream = () => {
+        const stream = new EventEmitter();
+        stream.columns = 80;
+        stream.rows = 24;
+        stream.isTTY = true;
+        stream.write = (str) => term.write(str);
+        stream.setEncoding = () => {};
+        stream.setRawMode = () => {};
+        stream.resume = () => {};
+        stream.pause = () => {};
+        stream.read = () => null;
+        return stream;
+      };
+
+      const stdout = createStream();
+      const stdin = createStream();
+
+      term.onData((data) => stdin.emit('data', data));
+
+      function Counter() {
+        const [count, setCount] = useState(0);
+        useEffect(() => {
+          const id = setInterval(() => setCount(c => c + 1), 1000);
+          return () => clearInterval(id);
+        }, []);
+
+        return React.createElement(
+          Box,
+          { flexDirection: 'column', padding: 1 },
+          React.createElement(Text, { bold: true, color: 'magenta' }, '\u26a1 Ink v7 Demo'),
+          React.createElement(
+            Box,
+            { marginTop: 1 },
+            React.createElement(Text, null, 'Counter: '),
+            React.createElement(Text, { color: 'green', bold: true }, String(count))
+          ),
+          React.createElement(
+            Box,
+            { marginTop: 1 },
+            React.createElement(Text, { color: 'cyan' }, '\u2713 Running in the browser via xterm.js')
+          )
+        );
+      }
+
+      render(React.createElement(Counter, null), {
+        stdout,
+        stderr: stdout,
+        stdin,
+        patchConsole: false,
+        debug: false,
+      });
+
+      if (document.readyState !== 'loading') {
+        term.open(document.getElementById('terminal'));
+        term.focus();
+      } else {
+        document.addEventListener('DOMContentLoaded', () => {
+          term.open(document.getElementById('terminal'));
+          term.focus();
+        });
+      }
+    </script>
+  </body>
+</html>
