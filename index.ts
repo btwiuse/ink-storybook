@@ -1,51 +1,56 @@
-import { Terminal } from '@xterm/xterm';
-import React from 'react';
-import { render } from 'ink';
-import { App } from './app'
-import EventEmitter from 'events';
-
+import { Terminal } from "@xterm/xterm";
+import React from "react";
+import { render } from "ink";
+import { App } from "./app";
+import EventEmitter from "events";
 
 interface Stream extends EventEmitter {
-	output: string;
-	columns: number;
+  output: string;
+  columns: number;
   rows: number;
-	write(str: string): void;
+  write(str: string): void;
   setEncoding(): void;
   setRawMode(): void;
   resume(): void;
   pause(): void;
-	get(): string;
+  get(): string;
   isTTY: boolean;
 }
 
-const term = new Terminal({convertEol: true, disableStdin: false});
+const term = new Terminal({ convertEol: true, disableStdin: false });
 
 const createStdout = (columns?: number): Stream => {
-	const stdout = new EventEmitter() as Stream;
-	stdout.columns = columns ?? 80;
+  const stdout = new EventEmitter() as Stream;
+  stdout.columns = columns ?? 80;
   stdout.rows = 80;
   stdout.isTTY = true;
-	stdout.write = (str: string) => {
-    term.write(str)
-  }
-  stdout.setEncoding = () => {}
-  stdout.setRawMode = () => {}
-  stdout.resume = () => {}
-  stdout.pause = () => {}
-	return stdout;
+  stdout.write = (str: string) => {
+    term.write(str);
+  };
+  stdout.setEncoding = () => {};
+  stdout.setRawMode = () => {};
+  stdout.resume = () => {};
+  stdout.pause = () => {};
+  return stdout;
 };
 
-const stdout = createStdout() as any
-const stdin = createStdout() as any
+const stdout = createStdout() as any;
+const stdin = createStdout() as any;
 
 term.onData((data) => {
-  stdin.emit('data', data)
+  stdin.emit("data", data);
 });
 
-render(React.createElement(App, {}), { stdout: stdout, stderr: stdout, stdin, debug: false, patchConsole: false});
+render(React.createElement(App, {}), {
+  stdout: stdout,
+  stderr: stdout,
+  stdin,
+  debug: false,
+  patchConsole: false,
+});
 
-document.addEventListener("DOMContentLoaded", function(event) {
-  const element = document.getElementById('terminal')
+document.addEventListener("DOMContentLoaded", function (event) {
+  const element = document.getElementById("terminal");
   if (element) {
     term.open(element);
     term.focus();
