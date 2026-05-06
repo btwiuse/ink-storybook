@@ -1,7 +1,5 @@
 import React, {useState, useEffect} from 'react';
 import { Text, Box } from 'ink';
-import Gradient from 'ink-gradient';
-import BigText from 'ink-big-text';
 
 interface CountownProps {
   children: React.ReactElement
@@ -28,14 +26,10 @@ export const Countdown = ({children, timer = 3}: CountownProps) => {
 	return (
     <>
       <Box justifyContent="center" >
-        <Gradient name="rainbow">
-          <BigText text="Ink v3"/>
-        </Gradient>
+        <Text color="green" bold>Ink v3</Text>
       </Box>
       <Box justifyContent="center" >
-        <Gradient name="rainbow">
-          <BigText text="Xterm.js"/>
-        </Gradient>
+        <Text color="blue" bold>Xterm.js</Text>
       </Box>
       <Box justifyContent="center" >
         <Text color="red">{counter}...</Text>
