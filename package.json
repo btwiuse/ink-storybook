@@ -29,6 +29,7 @@
     "webpack-dev-server": "^3.11.2"
   },
   "dependencies": {
+    "@xterm/xterm": "^6.0.0",
     "assert": "^2.0.0",
     "buffer": "^6.0.3",
     "chance": "^1.1.7",
@@ -38,7 +39,6 @@
     "os-browserify": "^0.3.0",
     "react": "16",
     "stream-browserify": "^3.0.0",
-    "tty-browserify": "^0.0.1",
-    "xterm": "^4.10.0"
+    "tty-browserify": "^0.0.1"
   }
 }

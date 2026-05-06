@@ -1,4 +1,4 @@
-import { Terminal } from 'xterm';
+import { Terminal } from '@xterm/xterm';
 import React from 'react';
 import { render } from 'ink';
 import { App } from './app'

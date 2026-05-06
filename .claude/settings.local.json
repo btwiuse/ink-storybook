@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn list *)",
+      "Bash(npm view *)",
+      "Bash(yarn info *)",
+      "Bash(yarn remove *)",
+      "Bash(yarn add *)",
+      "Bash(yarn compile *)",
+      "Bash(node *)",
+      "Bash(yarn build *)"
+    ]
+  }
+}

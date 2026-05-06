@@ -1,5 +1,6 @@
 const webpack = require('webpack')
 const CopyPlugin = require("copy-webpack-plugin")
+const TerserPlugin = require("terser-webpack-plugin");
 const path = require('path');
 const pathName = path.resolve(__dirname, 'dist')
 
@@ -10,6 +11,16 @@ module.exports = {
     filename: 'bundle.js',
   },
   mode: "production",
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        exclude: /xterm\.js/,
+      }),
+    ],
+  },
+  externals: {
+    '@xterm/xterm': 'window',
+  },
   resolve: {
     fallback: {
         "fs": false,
@@ -30,7 +41,8 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: "test.html", to: "index.html" },
-        { from: "node_modules/xterm/css/xterm.css", to: "xterm.css" },
+        { from: "node_modules/@xterm/xterm/lib/xterm.js", to: "xterm.js" },
+        { from: "node_modules/@xterm/xterm/css/xterm.css", to: "xterm.css" },
       ],
     }),
   ]
